@@ -27,9 +27,11 @@ export default class Node {
 				this.children.every(child => child.attributes[attribute] === undefined)
 			)
 				return
-			const val = (this.children.find(
-				child => child.attributes[attribute] != null
-			) || { attributes: { [attribute]: null } }).attributes[attribute]
+			const val = (
+				this.children.find(child => child.attributes[attribute] != null) || {
+					attributes: { [attribute]: null },
+				}
+			).attributes[attribute]
 			const consensus = this.children.every(
 				child =>
 					child.attributes[attribute] === null ||

@@ -1,5 +1,5 @@
 export const getIndentation = (line, spaces = true) =>
-	((spaces ? /^\  +/g : /^\t+/g)[Symbol.match](line) || [''])[0];
+	((spaces ? /^\  +/g : /^\t+/g)[Symbol.match](line) || [''])[0]
 
 export const maxInObject = obj => {
 	const keys = Object.keys(obj)
@@ -62,4 +62,4 @@ export const flatten = arr =>
 	arr.reduce(
 		(arr, val) => arr.concat(Array.isArray(val) ? flatten(val) : val),
 		[]
-	);
+	)
