@@ -19,11 +19,12 @@ const detect = raw => {
 	return config;
 };
 
-const constructTreeFromDirectory = path => {
+const constructTreeFromDirectory = (path, ignore = [".git"]) => {
 	const walk = path => {
 		const node = new Node(path, null);
 		const files = readdirSync(path);
 		files.forEach(file => {
+			if (ignore.find(i => file.startsWith(i))) return;
 			const childPath = join(path, file);
 			const stats = statSync(childPath);
 			if (stats.isFile(childPath)) {
@@ -31,8 +32,7 @@ const constructTreeFromDirectory = path => {
 				if (isBinary(contents)) return;
 				const attributes = detect(contents);
 				node.children.push(new Node(childPath, contents, [], attributes));
-			}
-			else if (stats.isDirectory(childPath))
+			} else if (stats.isDirectory(childPath))
 				node.children.push(walk(childPath));
 			else throw new Error("no idea how to handle file" + childPath);
 		});
@@ -41,10 +41,6 @@ const constructTreeFromDirectory = path => {
 	return walk(path);
 };
 
-const tree = constructTreeFromDirectory(process.argv[2]);
-console.log(JSON.stringify(tree, null, 2));
-tree.mergeAttributes();
-console.log(JSON.stringify(tree.attributes, null, 2));
 const printAttributes = (tree, indent = 0, indentUnit = "  ") => {
 	if (
 		Object.keys(tree.attributes).length == 0 &&
