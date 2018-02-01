@@ -14,6 +14,7 @@ export default class Node {
 		this.attributes = attributes
 		// only branches can hold information in its children
 		this.childrenContainInformation = content == null
+		this.isRoot = false
 	}
 
 	mergeAttributes(purge = false) {

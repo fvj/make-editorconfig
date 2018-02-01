@@ -39,7 +39,9 @@ const constructTreeFromDirectory = (path, ignore = []) => {
 		})
 		return node
 	}
-	return walk(path)
+	const tree = walk(path)
+	tree.isRoot = true
+	return tree
 }
 
 const printAttributes = (tree, indent = 0, indentUnit = '  ') => {
@@ -67,12 +69,17 @@ const generateConfig = tree => {
 	)
 		return []
 	const config = []
-	config.push(`[${tree.filename}${tree.content === null ? '/**' : ''}]`)
+	if (tree.isRoot) config.push('root = true', '')
+	if (Object.keys(tree.attributes).length > 0)
+		if (tree.isRoot) config.push('[*]')
+		else config.push(`[${tree.filename}${tree.content === null ? '/**' : ''}]`)
+
 	Object.keys(tree.attributes).forEach(key =>
 		config.push(`${key}=${tree.attributes[key]}`)
 	)
 	if (tree.childrenContainInformation)
 		config.push(...flatten(tree.children.map(generateConfig)))
+
 	return config.join('\n')
 }
 
