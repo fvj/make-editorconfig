@@ -6,6 +6,7 @@ import trimTrailingWhitespace from "./deduction/trimTrailingWhitespace";
 import Node from "./tree/node";
 import { readdirSync, statSync, readFileSync } from "fs";
 import { join } from "path";
+import { isBinary } from "./deduction/util";
 
 const detect = raw => {
 	const config = {};
@@ -27,7 +28,8 @@ const constructTreeFromDirectory = path => {
 			const stats = statSync(childPath);
 			if (stats.isFile(childPath)) {
 				const contents = readFileSync(childPath).toString();
-				const attributes = detect(contents)
+				if (isBinary(contents)) return;
+				const attributes = detect(contents);
 				node.children.push(new Node(childPath, contents, [], attributes));
 			}
 			else if (stats.isDirectory(childPath))
