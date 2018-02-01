@@ -39,13 +39,13 @@ test('merge two nodes', () => {
 })
 
 test("shouldn't merge different attributes of two nodes", () => {
-	const node1 = new Node('', '', [], {
-		indent_style: null,
+	const node1 = new Node('', null, [], {
+		indent_style: 'space',
 		end_of_line: 'lf',
 		trim_trailing_whitespace: true,
 		insert_final_newline: false,
 	})
-	const node2 = new Node('', '', [], {
+	const node2 = new Node('', null, [], {
 		indent_style: 'tab',
 		end_of_line: 'lf',
 		trim_trailing_whitespace: true,
@@ -57,4 +57,30 @@ test("shouldn't merge different attributes of two nodes", () => {
 		trim_trailing_whitespace: true,
 	})
 	expect(root.childrenContainInformation).toBe(true)
+})
+
+test('should even merge null', () => {
+	const node1 = new Node('', '', [], {
+		indent_style: null,
+	})
+	const node2 = new Node('', '', [], {
+		indent_style: null,
+	})
+	const root = new Node('', null, [node1, node2])
+	expect(root.mergeAttributes().attributes).toEqual({
+		indent_style: null,
+	})
+	expect(root.childrenContainInformation).toBe(false)
+})
+
+test('should purge if asked to', () => {
+	const node1 = new Node('', '', [], {
+		indent_style: null,
+	})
+	const node2 = new Node('', '', [], {
+		indent_style: null,
+	})
+	const root = new Node('', null, [node1, node2])
+	expect(root.mergeAttributes(true).attributes).toEqual({})
+	expect(root.childrenContainInformation).toBe(false)
 })
