@@ -30,3 +30,30 @@ export const count = (arr, str) => {
 	}
 	return count
 }
+
+export const range = (arg1, init = null, arg2) => {
+	const res = []
+	const start = arg2 ? arg1 : 0
+	const end = arg2 ? arg2 : arg1
+	for (let i = start; i < end; i++) res.push(init !== null ? init : i)
+	return res
+}
+
+export const asciiOccurrences = content => {
+	const res = range(256, 0)
+	for (let i = 0; i < content.length; i++) res[content[i].charCodeAt(0)]++
+	return res
+}
+
+// doesn't work for UTF-16
+export const isBinary = content => content.indexOf('\0') > -1
+
+export const entropy = content =>
+	asciiOccurrences(content)
+		.map(count => count / content.length)
+		.filter(percentage => percentage)
+		.reduce(
+			(entropy, percentage) =>
+				entropy - percentage * Math.log(percentage) / Math.log(256),
+			0
+		)

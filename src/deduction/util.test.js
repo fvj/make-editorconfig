@@ -88,3 +88,62 @@ describe('maxInObject', () => {
 		expect(util.maxInObject(object)).toBe('b')
 	})
 })
+
+describe('range', () => {
+	test('defaults to incrementing range with maximum value ', () => {
+		expect(util.range(10)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+	})
+
+	test('fills the range', () => {
+		expect(util.range(10, 0)).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+	})
+
+	test('starts at the specified value', () => {
+		expect(util.range(10, null, 20)).toEqual([
+			10,
+			11,
+			12,
+			13,
+			14,
+			15,
+			16,
+			17,
+			18,
+			19,
+		])
+	})
+})
+
+describe('asciiOccurrences', () => {
+	test('counts occurrences', () => {
+		const test = util
+			.range(256)
+			.map(i => String.fromCharCode(i))
+			.join('')
+		expect(util.asciiOccurrences(test)).toEqual(util.range(256, 1))
+	})
+
+	test('handles empty input', () => {
+		const test = ''
+		expect(util.asciiOccurrences(test)).toEqual(util.range(256, 0))
+	})
+
+	// TODO: maybe test some randomly constructed string
+})
+
+describe('entropy', () => {
+	test('calculates the maximum entropy', () => {
+		expect(
+			util.entropy(
+				util
+					.range(256)
+					.map(i => String.fromCharCode(i))
+					.join('')
+			)
+		).toBe(1)
+	})
+
+	test('defaults to zero entropy', () => {
+		expect(util.entropy('')).toBe(0)
+	})
+})
