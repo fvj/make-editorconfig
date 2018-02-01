@@ -7,6 +7,7 @@ import Node from './tree/node'
 import { readdirSync, statSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { isBinary, flatten } from './deduction/util'
+import match from 'minimatch'
 
 const detect = raw => {
 	const config = {}
@@ -19,12 +20,12 @@ const detect = raw => {
 	return config
 }
 
-const constructTreeFromDirectory = (path, ignore = ['.git']) => {
+const constructTreeFromDirectory = (path, ignore = []) => {
 	const walk = path => {
 		const node = new Node(path, null)
 		const files = readdirSync(path)
 		files.forEach(file => {
-			if (ignore.find(i => file.startsWith(i))) return
+			if (ignore.some(i => match(file, i))) return
 			const childPath = join(path, file)
 			const stats = statSync(childPath)
 			if (stats.isFile(childPath)) {
@@ -75,12 +76,5 @@ const generateConfig = tree => {
 	return config.join('\n')
 }
 
-export const generate = dir =>
-	generateConfig(
-		constructTreeFromDirectory(
-			dir,
-			['license.md', 'package.json', 'readme.md', '.', 'yarn.lock'].concat(
-				process.argv.slice(3)
-			)
-		).mergeAttributes(true)
-	)
+export const generate = (dir, ignore) =>
+	generateConfig(constructTreeFromDirectory(dir, ignore).mergeAttributes(true))
