@@ -9,7 +9,7 @@ import { join } from 'path'
 import { isBinary, flatten } from './deduction/util'
 import match from 'minimatch'
 
-const detect = raw => {
+export const detect = raw => {
 	const config = {}
 	config['end_of_line'] = endOfLine(raw)
 	const lines = raw.split('\n')
@@ -20,7 +20,7 @@ const detect = raw => {
 	return config
 }
 
-const constructTreeFromDirectory = (path, ignore = []) => {
+export const constructTreeFromDirectory = (path, ignore = []) => {
 	const walk = path => {
 		const node = new Node(path, null)
 		const files = readdirSync(path)
@@ -44,7 +44,7 @@ const constructTreeFromDirectory = (path, ignore = []) => {
 	return tree
 }
 
-const printAttributes = (tree, indent = 0, indentUnit = '  ') => {
+export const printAttributes = (tree, indent = 0, indentUnit = '  ') => {
 	if (
 		Object.keys(tree.attributes).length == 0 &&
 		!tree.childrenContainInformation
@@ -62,7 +62,7 @@ const printAttributes = (tree, indent = 0, indentUnit = '  ') => {
 	tree.children.forEach(child => printAttributes(child, indent + 1))
 }
 
-const generateConfig = tree => {
+export const generateConfig = tree => {
 	if (
 		Object.keys(tree.attributes).length == 0 &&
 		!tree.childrenContainInformation
