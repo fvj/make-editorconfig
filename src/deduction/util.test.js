@@ -147,3 +147,25 @@ describe('entropy', () => {
 		expect(util.entropy('')).toBe(0)
 	})
 })
+
+describe('flatten', () => {
+	test('should handle empty arrays', () => {
+		const arr = [];
+		expect(util.flatten(arr)).toEqual([])
+	})
+	
+	test('should leave flat arrays alone', () => {
+		const arr = [1,2,3,4];
+		expect(util.flatten(arr)).toEqual([1,2,3,4])
+	})
+
+	test('should flatten simple nested arrays', () => {
+		const arr = [1,[2,3],4]
+		expect(util.flatten(arr)).toEqual([1,2,3,4]);
+	})
+
+	test('should flatten deeply nested arrays', () => {
+		const arr = [1,[2,[3,[4]],[5],6,[[7]]]]
+		expect(util.flatten(arr)).toEqual([1,2,3,4,5,6,7])
+	})
+})

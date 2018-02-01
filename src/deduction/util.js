@@ -57,3 +57,9 @@ export const entropy = content =>
 				entropy - percentage * Math.log(percentage) / Math.log(256),
 			0
 		)
+
+export const flatten = arr =>
+	arr.reduce(
+		(arr, val) => arr.concat(Array.isArray(val) ? flatten(val) : val),
+		[]
+	);
