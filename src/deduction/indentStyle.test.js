@@ -10,12 +10,17 @@ test('should detect tabs', () => {
 	expect(indentStyle(lines)).toBe('tab')
 })
 
-test('should default to spaces', () => {
+test('should default to tabs', () => {
 	const lines = '\t\thello\n  world'.split('\n')
-	expect(indentStyle(lines)).toBe('space')
+	expect(indentStyle(lines)).toBe('tab')
 })
 
 test('should not return anything for empty input', () => {
 	const lines = ''.split('\n')
 	expect(indentStyle(lines)).toBe(null)
+})
+
+test('should only test for leading whitespace', () => {
+	const lines = '\t\t                 hello\n\t     aa a a'.split('\n')
+	expect(indentStyle(lines)).toBe('tab')
 })

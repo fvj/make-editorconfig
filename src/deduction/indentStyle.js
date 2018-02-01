@@ -1,11 +1,12 @@
 import { getIndentation } from './util'
 
 export default lines => {
-	const spaces = lines
-		.map(getIndentation)
-		.filter(line => line.startsWith(' '))
-		.map(s => s.length)
+	const tabs = lines
+		.map(line => getIndentation(line, false))
+		.filter(line => line !== '').length
+	const spaces = lines.map(getIndentation).filter(line => line !== '').length
 
-	if (spaces.length > 0) return 'space'
-	return lines.length > 1 ? 'tab' : null
+	if ((tabs === 0 && spaces === 0) || lines.length === 0 || tabs === spaces)
+		return null
+	return tabs > 0 ? 'tab' : 'space'
 }
