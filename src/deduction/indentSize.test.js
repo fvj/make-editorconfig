@@ -16,6 +16,6 @@ test('should not attempt to detect tab', () => {
 })
 
 test('should not allow sizes of 1', () => {
-	const lines = '  hello world\n test'.split('\n')
+	const lines = ' hello world\n test'.split('\n')
 	expect(indentSize(lines)).toBe(null)
 })
