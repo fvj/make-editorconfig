@@ -75,3 +75,13 @@ const generateConfig = tree => {
 	return config.join("\n");
 };
 
+export const generate = dir =>
+	generateConfig(
+		constructTreeFromDirectory(
+			dir,
+			["license.md", "package.json", "readme.md", ".", "yarn.lock"].concat(
+				process.argv.slice(3)
+			)
+		).mergeAttributes(true)
+	);
+
