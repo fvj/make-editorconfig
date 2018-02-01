@@ -45,3 +45,21 @@ const tree = constructTreeFromDirectory(process.argv[2]);
 console.log(JSON.stringify(tree, null, 2));
 tree.mergeAttributes();
 console.log(JSON.stringify(tree.attributes, null, 2));
+const printAttributes = (tree, indent = 0, indentUnit = "  ") => {
+	if (
+		Object.keys(tree.attributes).length == 0 &&
+		!tree.childrenContainInformation
+	)
+		return;
+	const indentation = (() => {
+		const res = [];
+		for (let i = 0; i < indent; i++) res.push(indentUnit);
+		return res.join("");
+	})();
+	console.log(indentation + "* " + tree.filename);
+	Object.keys(tree.attributes).forEach(key =>
+		console.log(indentation + indentUnit + key + "=" + tree.attributes[key])
+	);
+	tree.children.forEach(child => printAttributes(child, indent + 1));
+};
+
