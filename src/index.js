@@ -6,7 +6,7 @@ import trimTrailingWhitespace from "./deduction/trimTrailingWhitespace";
 import Node from "./tree/node";
 import { readdirSync, statSync, readFileSync } from "fs";
 import { join } from "path";
-import { isBinary } from "./deduction/util";
+import { isBinary, flatten } from "./deduction/util";
 
 const detect = raw => {
 	const config = {};
@@ -61,5 +61,21 @@ const printAttributes = (tree, indent = 0, indentUnit = "  ") => {
 		console.log(indentation + indentUnit + key + "=" + tree.attributes[key])
 	);
 	tree.children.forEach(child => printAttributes(child, indent + 1));
+};
+
+const generateConfig = tree => {
+	if (
+		Object.keys(tree.attributes).length == 0 &&
+		!tree.childrenContainInformation
+	)
+		return [];
+	const config = [];
+	config.push(`[${tree.filename}${tree.content === null ? "/**" : ""}]`);
+	Object.keys(tree.attributes).forEach(key =>
+		config.push(`${key}=${tree.attributes[key]}`)
+	);
+	if (tree.childrenContainInformation)
+		config.push(...flatten(tree.children.map(generateConfig)));
+	return config.join("\n");
 };
 
