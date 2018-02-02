@@ -46,7 +46,7 @@ export const asciiOccurrences = content => {
 }
 
 // doesn't work for UTF-16
-export const isBinary = content => content.indexOf('\0') > -1
+export const isBinary = content => content && content.indexOf('\0') > -1
 
 export const entropy = content =>
 	asciiOccurrences(content)
