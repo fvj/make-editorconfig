@@ -112,8 +112,11 @@ const generateConfig = tree => {
 		else config.push(`[${tree.filename}${tree.content === null ? '/**' : ''}]`)
 
 	Object.keys(tree.attributes).forEach(key =>
-		config.push(`${key}=${tree.attributes[key]}`)
+		config.push(`${key} = ${tree.attributes[key]}`)
 	)
+
+	config.push('')
+
 	if (tree.childrenContainInformation)
 		config.push(...flatten(tree.children.map(generateConfig)))
 
