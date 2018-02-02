@@ -22,10 +22,47 @@ export const detect = raw => {
 	return config
 }
 
+/**
+ * Constructs a tree structure given paths and their contents.
+ * @param {Array} objs - array of objects with a `path` and `content` field
+ * @param {Array} ignore - array of globs; matching paths will be ignored
+ * @returns {Node} the root of the tree constructed
+ */
+const constructTree = (objs, ignore = []) => {
+	const buckets = new Map()
+	objs.forEach(obj => {
+		if (ignore.some(i => match(obj.path, i))) return
+		const key =
+			obj.path.split('/').length - 1 - (obj.path.endsWith('/') ? 1 : 0)
+		if (buckets.has(key)) buckets.get(key).push(obj)
+		else buckets.set(key, [obj])
+	})
+	const helper = (parent, level) => {
+		if (!buckets.has(level)) return []
+		const nodes = buckets
+			.get(level)
+			.filter(
+				obj =>
+					(parent.filename === '*'
+						? true
+						: obj.path.startsWith(parent.filename)) && !isBinary(obj.content) // fixme: make sure we only append to directories
+			)
+			.map(node => {
+				const n = new Node(
+					node.path,
+					node.content,
+					[],
+					node.content ? detect(node.content) : undefined
+				)
+				n.children = helper(n, level + 1)
+				return n
+			})
+		return nodes
 	}
-	const tree = walk(path)
-	tree.isRoot = true
-	return tree
+	const root = new Node('*', null)
+	root.children = helper(root, 0)
+	root.isRoot = true
+	return root
 }
 
 export const printAttributes = (tree, indent = 0, indentUnit = '  ') => {
