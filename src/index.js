@@ -9,7 +9,12 @@ import Node from './tree/node'
 import { isBinary, flatten } from './deduction/util'
 import match from 'minimatch'
 
-export const detect = raw => {
+/**
+ * Generates the attributes of the given contents.
+ * @param {string} raw - the contents
+ * @returns {object} a populated field of attributes
+ */
+const detect = raw => {
 	const config = {}
 	config['end_of_line'] = endOfLine(raw)
 	const lines = raw.split(
@@ -65,7 +70,13 @@ const constructTree = (objs, ignore = []) => {
 	return root
 }
 
-export const printAttributes = (tree, indent = 0, indentUnit = '  ') => {
+/**
+ * Prints a representation of a tree recursively.
+ * @param {Node} tree - the tree to recursively print
+ * @param {Number} indent - the indent level to be applied
+ * @param {string} indentUnit - one unit of indentation, defaults to a two spaces
+ */
+const printAttributes = (tree, indent = 0, indentUnit = '  ') => {
 	if (
 		Object.keys(tree.attributes).length == 0 &&
 		!tree.childrenContainInformation
@@ -83,7 +94,12 @@ export const printAttributes = (tree, indent = 0, indentUnit = '  ') => {
 	tree.children.forEach(child => printAttributes(child, indent + 1))
 }
 
-export const generateConfig = tree => {
+/**
+ * Generates a editorconfig config for a given tree, recursively
+ * @param {Node} tree - the tree to generate a config for
+ * @returns {string} the editorconfig
+ */
+const generateConfig = tree => {
 	if (
 		Object.keys(tree.attributes).length == 0 &&
 		!tree.childrenContainInformation
@@ -104,3 +120,13 @@ export const generateConfig = tree => {
 	return config.join('\n')
 }
 
+/**
+ * Generates an editorconfig from file objects
+ * @param {array} objs - array of objects with `path` and `content` fields
+ * @param {array} ignore - array of globs; matching paths will be ignored
+ * @returns {string} the editorconfig
+ */
+const generate = (objs, ignore) =>
+	generateConfig(constructTree(objs, ignore).mergeAttributes(true))
+
+export { generate, generateConfig, printAttributes, constructTree, detect }
