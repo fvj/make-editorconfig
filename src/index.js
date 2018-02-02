@@ -12,7 +12,9 @@ import match from 'minimatch'
 export const detect = raw => {
 	const config = {}
 	config['end_of_line'] = endOfLine(raw)
-	const lines = raw.split('\n')
+	const lines = raw.split(
+		{ cr: '\r', lf: '\n', crlf: '\r\n' }[config['end_of_line']]
+	)
 	config['indent_style'] = indentStyle(lines)
 	config['indent_size'] = indentSize(lines)
 	config['insert_final_newline'] = insertFinalNewline(lines)
