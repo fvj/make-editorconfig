@@ -14,3 +14,8 @@ test('detects CRLF lineendings', () => {
 	const raw = 'hello\r\nworld\r\n'
 	expect(endOfLine(raw)).toBe('crlf')
 })
+
+test('should default to LF', () => {
+	const raw = 'hello'
+	expect(endOfLine(raw)).toBe('lf')
+})
