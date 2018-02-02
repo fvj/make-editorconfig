@@ -1,8 +1,10 @@
-import endOfLine from './deduction/endOfLine'
-import indentSize from './deduction/indentSize'
-import indentStyle from './deduction/indentStyle'
-import insertFinalNewline from './deduction/insertFinalNewline'
-import trimTrailingWhitespace from './deduction/trimTrailingWhitespace'
+import {
+	endOfLine,
+	indentSize,
+	indentStyle,
+	insertFinalNewline,
+	trimTrailingWhitespace,
+} from './deduction/index'
 import Node from './tree/node'
 import { readdirSync, statSync, readFileSync } from 'fs'
 import { join } from 'path'
