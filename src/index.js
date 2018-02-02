@@ -6,8 +6,6 @@ import {
 	trimTrailingWhitespace,
 } from './deduction/index'
 import Node from './tree/node'
-import { readdirSync, statSync, readFileSync } from 'fs'
-import { join } from 'path'
 import { isBinary, flatten } from './deduction/util'
 import match from 'minimatch'
 
@@ -22,24 +20,6 @@ export const detect = raw => {
 	return config
 }
 
-export const constructTreeFromDirectory = (path, ignore = []) => {
-	const walk = path => {
-		const node = new Node(path, null)
-		const files = readdirSync(path)
-		files.forEach(file => {
-			if (ignore.some(i => match(file, i))) return
-			const childPath = join(path, file)
-			const stats = statSync(childPath)
-			if (stats.isFile(childPath)) {
-				const contents = readFileSync(childPath).toString()
-				if (isBinary(contents)) return
-				const attributes = detect(contents)
-				node.children.push(new Node(childPath, contents, [], attributes))
-			} else if (stats.isDirectory(childPath))
-				node.children.push(walk(childPath))
-			else throw new Error('no idea how to handle file' + childPath)
-		})
-		return node
 	}
 	const tree = walk(path)
 	tree.isRoot = true
@@ -85,5 +65,3 @@ export const generateConfig = tree => {
 	return config.join('\n')
 }
 
-export const generate = (dir, ignore) =>
-	generateConfig(constructTreeFromDirectory(dir, ignore).mergeAttributes(true))
