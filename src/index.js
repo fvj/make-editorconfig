@@ -130,6 +130,10 @@ const generateConfig = tree => {
  * @returns {string} the editorconfig
  */
 const generate = (objs, ignore) =>
-	generateConfig(constructTree(objs, ignore).mergeAttributes(true))
+	generateConfig(
+		constructTree(objs, ignore)
+			.mergeAttributes(true)
+			.clean()
+	)
 
 export { generate, generateConfig, printAttributes, constructTree, detect }

@@ -16,6 +16,14 @@ export default class Node {
 		this.childrenContainInformation = content == null
 	}
 
+	clean() {
+		this.children.forEach(c => c.clean())
+		Object.keys(this.attributes).forEach(attribute => {
+			if (!this.attributes[attribute]) delete this.attributes[attribute]
+		})
+		return this
+	}
+
 	mergeAttributes(purge = false) {
 		if (this.children.length === 0) return
 		this.childrenContainInformation = false
