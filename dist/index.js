@@ -116,6 +116,14 @@ class Node {
 		this.childrenContainInformation = content == null;
 	}
 
+	clean() {
+		this.children.forEach(c => c.clean());
+		Object.keys(this.attributes).forEach(attribute => {
+			if (!this.attributes[attribute]) delete this.attributes[attribute];
+		});
+		return this
+	}
+
 	mergeAttributes(purge = false) {
 		if (this.children.length === 0) return
 		this.childrenContainInformation = false;
@@ -232,7 +240,7 @@ const printAttributes = (tree, indent = 0, indentUnit = '  ') => {
 		for (let i = 0; i < indent; i++) res.push(indentUnit);
 		return res.join('')
 	})();
-	console.log(indentation + '* ' + tree.filename);
+	console.log(indentation + '- ' + tree.filename);
 	Object.keys(tree.attributes).forEach(key =>
 		console.log(indentation + indentUnit + key + '=' + tree.attributes[key])
 	);
@@ -275,7 +283,11 @@ const generateConfig = tree => {
  * @returns {string} the editorconfig
  */
 const generate = (objs, ignore) =>
-	generateConfig(constructTree(objs, ignore).mergeAttributes(true));
+	generateConfig(
+		constructTree(objs, ignore)
+			.mergeAttributes(true)
+			.clean()
+	);
 
 exports.generate = generate;
 exports.generateConfig = generateConfig;
