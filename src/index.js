@@ -87,7 +87,7 @@ const printAttributes = (tree, indent = 0, indentUnit = '  ') => {
 		for (let i = 0; i < indent; i++) res.push(indentUnit)
 		return res.join('')
 	})()
-	console.log(indentation + '* ' + tree.filename)
+	console.log(indentation + '- ' + tree.filename)
 	Object.keys(tree.attributes).forEach(key =>
 		console.log(indentation + indentUnit + key + '=' + tree.attributes[key])
 	)
