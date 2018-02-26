@@ -1,14 +1,15 @@
 export const getIndentation = (line, spaces = true) =>
 	((spaces ? /^\  +/g : /^\t+/g)[Symbol.match](line) || [''])[0]
 
-export const maxInObject = obj => {
+export const maxInObject = (obj, access = (obj, key) => obj[key]) => {
 	const keys = Object.keys(obj)
+	if (keys.length === 0) return
 	let maxKey = keys[0]
-	let maxValue = obj[maxKey]
+	let maxValue = access(obj, maxKey)
 
-	for (let i = 0; i < keys.length; i++)
-		if (obj[keys[i]] > maxValue) {
-			maxValue = obj[keys[i]]
+	for (let i = 1; i < keys.length; i++)
+		if (access(obj, keys[i]) > maxValue) {
+			maxValue = access(obj, keys[i])
 			maxKey = keys[i]
 		}
 
