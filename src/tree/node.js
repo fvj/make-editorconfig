@@ -8,6 +8,32 @@ export const ATTRIBUTES = [
 	'insert_final_newline',
 ]
 
+const generateConsensus = children => {
+	const res = {}
+
+	ATTRIBUTES.forEach(attribute => {
+		if (children.every(child => child.attributes[attribute] === undefined))
+			return
+
+		const val = (
+			children.find(child => child.attributes[attribute] != null) || {
+				attributes: { [attribute]: null },
+			}
+		).attributes[attribute]
+
+		const consensus = children.every(
+			child =>
+				child.attributes[attribute] === null ||
+				child.attributes[attribute] === val
+		)
+
+		if (!consensus) return
+
+		res[attribute] = val
+	})
+	return res
+}
+
 export default class Node {
 	constructor(filename, content, children = [], attributes = {}) {
 		this.filename = filename
@@ -16,6 +42,11 @@ export default class Node {
 		this.attributes = attributes
 		// only branches can hold information in its children
 		this.childrenContainInformation = content == null
+		this.attributesByExtension = {}
+	}
+
+	isDirectory() {
+		return this.content === null
 	}
 
 	clean() {
@@ -77,5 +108,34 @@ export default class Node {
 			})
 
 		return this
+	}
+
+	mergeByExtensions() {
+		const extensionOf = path => path.split('.').pop()
+		const extensions = new Set()
+
+		this.children.forEach(child => {
+			if (child.isDirectory()) child.mergeByExtensions()
+		})
+
+		this.children.forEach(child => {
+			if (!child.isDirectory()) extensions.add(extensionOf(child.filename))
+		})
+
+		for (const extension of extensions) {
+			const childrenByExtension = this.children.filter(
+				c => extensionOf(c.filename) === extension
+			)
+			const consensus = generateConsensus(childrenByExtension)
+
+			if (Object.keys(consensus).length === 0) continue // no consensus reached
+
+			// bubble up
+			childrenByExtension.forEach(child => {
+				Object.keys(consensus).forEach(key => delete child.attributes[key])
+			})
+
+			this.attributesByExtension[extension] = consensus
+		}
 	}
 }

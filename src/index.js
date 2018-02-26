@@ -116,7 +116,17 @@ const generateConfig = tree => {
 		config.push(`${key} = ${tree.attributes[key]}`)
 	)
 
-	config.push('')
+	if (Object.keys(tree.attributes).length > 0) config.push('')
+
+	if (Object.keys(tree.attributesByExtension).length > 0) {
+		for (const extension in tree.attributesByExtension) {
+			if (Object.keys(tree.attributesByExtension[extension]).length > 0) {
+				config.push(`[${tree.isRoot ? '' : tree.filename + '/'}*.${extension}]`)
+				for (const key in tree.attributesByExtension[extension])
+					config.push(`${key} = ${tree.attributesByExtension[extension][key]}`)
+			}
+		}
+	}
 
 	if (tree.childrenContainInformation)
 		config.push(...flatten(tree.children.map(generateConfig)))
