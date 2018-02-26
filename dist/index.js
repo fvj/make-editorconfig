@@ -10,14 +10,15 @@ var match = _interopDefault(require('minimatch'));
 const getIndentation = (line, spaces = true) =>
 	((spaces ? /^\  +/g : /^\t+/g)[Symbol.match](line) || [''])[0];
 
-const maxInObject = obj => {
+const maxInObject = (obj, access = (obj, key) => obj[key]) => {
 	const keys = Object.keys(obj);
+	if (keys.length === 0) return
 	let maxKey = keys[0];
-	let maxValue = obj[maxKey];
+	let maxValue = access(obj, maxKey);
 
-	for (let i = 0; i < keys.length; i++)
-		if (obj[keys[i]] > maxValue) {
-			maxValue = obj[keys[i]];
+	for (let i = 1; i < keys.length; i++)
+		if (access(obj, keys[i]) > maxValue) {
+			maxValue = access(obj, keys[i]);
 			maxKey = keys[i];
 		}
 
@@ -68,7 +69,9 @@ var indentStyle = lines => {
 	const tabs = lines
 		.map(line => getIndentation(line, false))
 		.filter(line => line !== '').length;
-	const spaces = lines.map(getIndentation).filter(line => line !== '').length;
+	const spaces = lines
+		.map(line => getIndentation(line))
+		.filter(line => line !== '').length;
 
 	if ((tabs === 0 && spaces === 0) || lines.length === 0 || tabs === spaces)
 		return null
@@ -106,6 +109,29 @@ const ATTRIBUTES = [
 	'insert_final_newline',
 ];
 
+const generateConsensus = children => {
+	const res = {};
+	ATTRIBUTES.forEach(attribute => {
+		if (children.every(child => child.attributes[attribute] === undefined))
+			return
+		const val = (
+			children.find(child => child.attributes[attribute] != null) || {
+				attributes: { [attribute]: null },
+			}
+		).attributes[attribute];
+		const consensus = children.every(
+			child =>
+				child.attributes[attribute] === null ||
+				child.attributes[attribute] === val
+		);
+		if (!consensus) return
+
+		// console.info(`consensus for ${this.filename} on ${attribute} is ${val}`)
+		res[attribute] = val;
+	});
+	return res
+};
+
 class Node {
 	constructor(filename, content, children = [], attributes = {}) {
 		this.filename = filename;
@@ -114,6 +140,11 @@ class Node {
 		this.attributes = attributes;
 		// only branches can hold information in its children
 		this.childrenContainInformation = content == null;
+		this.attributesByExtension = {};
+	}
+
+	isDirectory() {
+		return this.content === null
 	}
 
 	clean() {
@@ -130,16 +161,27 @@ class Node {
 		this.children.forEach(child => child.mergeAttributes());
 		// todo: this iterates over the children a constant amount, yet
 		// still too often; we'd probably need only a single pass
+
 		ATTRIBUTES.forEach(attribute => {
 			if (
 				this.children.every(child => child.attributes[attribute] === undefined)
 			)
 				return
-			const val = (
-				this.children.find(child => child.attributes[attribute] != null) || {
-					attributes: { [attribute]: null },
-				}
-			).attributes[attribute];
+			let values = {};
+			this.children.forEach(child => {
+				if (child.attributes[attribute])
+					if (values[child.attributes[attribute]])
+						values[child.attributes[attribute]].count++;
+					else
+						values[child.attributes[attribute]] = {
+							value: child.attributes[attribute],
+							count: 1,
+						};
+			});
+			const maxKey = maxInObject(values, (obj, key) => obj[key].count);
+			// console.log(Object.keys(values).map(k => values[k].count))
+			if (!maxKey) return
+			const val = values[maxKey].value;
 			const consensus = this.children.every(
 				child =>
 					child.attributes[attribute] === null ||
@@ -148,17 +190,53 @@ class Node {
 			if (!consensus) {
 				// console.info(`did not reach consensus for node ${this.filename} on attribute ${attribute}`)
 				this.childrenContainInformation = true;
-				return
 			}
 			// console.info(`consensus for ${this.filename} on ${attribute} is ${val}`)
 			this.attributes[attribute] = val;
-			this.children.forEach(child => delete child.attributes[attribute]);
+			this.children.forEach(child => {
+				if (child.attributes[attribute] === val)
+					delete child.attributes[attribute];
+			});
 		});
 		if (purge)
 			Object.keys(this.attributes).forEach(key => {
 				if (this.attributes[key] === null) delete this.attributes[key];
 			});
 		return this
+	}
+
+	summarizeExtensions() {
+		const extensionOf = path => path.split('.').pop();
+		const extensions = new Set();
+
+		this.children.forEach(child => {
+			// console.log(child.filename, child.isDirectory())
+			if (child.isDirectory()) child.summarizeExtensions();
+		});
+
+		this.children.forEach(child => {
+			if (!child.isDirectory()) extensions.add(extensionOf(child.filename));
+		});
+
+		for (const extension of extensions) {
+			const childrenByExtension = this.children.filter(
+				c => extensionOf(c.filename) === extension
+			);
+			const consensus = generateConsensus(childrenByExtension);
+
+			if (Object.keys(consensus).length === 0) continue
+
+			// console.log('before deleting')
+			// console.log(JSON.stringify(childrenByExtension, null, 2))
+			childrenByExtension.forEach(child => {
+				Object.keys(consensus).forEach(key => delete child.attributes[key]);
+			});
+			// console.log('after deleting')
+			// console.log(JSON.stringify(childrenByExtension, null, 2))
+
+			this.attributesByExtension[extension] = consensus;
+		}
+		// console.log(JSON.stringify(this.attributesByExtension, null, 2))
 	}
 }
 
@@ -260,15 +338,26 @@ const generateConfig = tree => {
 		return []
 	const config = [];
 	if (tree.isRoot) config.push('root = true', '');
-	if (Object.keys(tree.attributes).length > 0)
+	if (Object.keys(tree.attributes).length > 0) {
 		if (tree.isRoot) config.push('[*]');
 		else config.push(`[${tree.filename}${tree.content === null ? '/**' : ''}]`);
+	}
 
 	Object.keys(tree.attributes).forEach(key =>
 		config.push(`${key} = ${tree.attributes[key]}`)
 	);
 
-	config.push('');
+	if (Object.keys(tree.attributes).length > 0) config.push('');
+
+	if (Object.keys(tree.attributesByExtension).length > 0) {
+		for (const extension in tree.attributesByExtension) {
+			if (Object.keys(tree.attributesByExtension[extension]).length > 0) {
+				config.push(`[${tree.isRoot ? '' : tree.filename + '/'}*.${extension}]`);
+				for (const key in tree.attributesByExtension[extension])
+					config.push(`${key} = ${tree.attributesByExtension[extension][key]}`);
+			}
+		}
+	}
 
 	if (tree.childrenContainInformation)
 		config.push(...flatten(tree.children.map(generateConfig)));
