@@ -1,3 +1,5 @@
+import { maxInObject } from '../deduction/util'
+
 export const ATTRIBUTES = [
 	'indent_style',
 	'indent_size',
@@ -28,6 +30,7 @@ export default class Node {
 		if (this.children.length === 0) return
 		this.childrenContainInformation = false
 		this.children.forEach(child => child.mergeAttributes())
+
 		// todo: this iterates over the children a constant amount, yet
 		// still too often; we'd probably need only a single pass
 		ATTRIBUTES.forEach(attribute => {
@@ -35,29 +38,44 @@ export default class Node {
 				this.children.every(child => child.attributes[attribute] === undefined)
 			)
 				return
-			const val = (
-				this.children.find(child => child.attributes[attribute] != null) || {
-					attributes: { [attribute]: null },
-				}
-			).attributes[attribute]
+
+			// ugly hack, fix pls.
+			let values = {}
+			this.children.forEach(child => {
+				if (child.attributes[attribute])
+					if (values[child.attributes[attribute]])
+						values[child.attributes[attribute]].count++
+					else
+						values[child.attributes[attribute]] = {
+							value: child.attributes[attribute],
+							count: 1,
+						}
+			})
+
+			const maxKey = maxInObject(values, (obj, key) => obj[key].count)
+			if (!maxKey) return
+
+			const val = values[maxKey].value
 			const consensus = this.children.every(
 				child =>
 					child.attributes[attribute] === null ||
 					child.attributes[attribute] === val
 			)
-			if (!consensus) {
-				// console.info(`did not reach consensus for node ${this.filename} on attribute ${attribute}`)
-				this.childrenContainInformation = true
-				return
-			}
-			// console.info(`consensus for ${this.filename} on ${attribute} is ${val}`)
+
+			if (!consensus) this.childrenContainInformation = true
+
 			this.attributes[attribute] = val
-			this.children.forEach(child => delete child.attributes[attribute])
+			this.children.forEach(child => {
+				if (child.attributes[attribute] === val)
+					delete child.attributes[attribute]
+			})
 		})
+
 		if (purge)
 			Object.keys(this.attributes).forEach(key => {
 				if (this.attributes[key] === null) delete this.attributes[key]
 			})
+
 		return this
 	}
 }
