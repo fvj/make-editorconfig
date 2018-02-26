@@ -107,9 +107,10 @@ const generateConfig = tree => {
 		return []
 	const config = []
 	if (tree.isRoot) config.push('root = true', '')
-	if (Object.keys(tree.attributes).length > 0)
+	if (Object.keys(tree.attributes).length > 0) {
 		if (tree.isRoot) config.push('[*]')
 		else config.push(`[${tree.filename}${tree.content === null ? '/**' : ''}]`)
+	}
 
 	Object.keys(tree.attributes).forEach(key =>
 		config.push(`${key} = ${tree.attributes[key]}`)
