@@ -111,7 +111,8 @@ export default class Node {
 	}
 
 	mergeByExtensions() {
-		const extensionOf = path => path.split('.').pop()
+		const extensionOf = path =>
+			path.indexOf('.') > -1 ? path.split('.').pop() : ''
 		const extensions = new Set()
 
 		this.children.forEach(child => {
