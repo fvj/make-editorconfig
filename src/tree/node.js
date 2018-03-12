@@ -112,7 +112,7 @@ export default class Node {
 
 	mergeByExtensions() {
 		const extensionOf = path =>
-			path.indexOf('.') > -1 ? path.split('.').pop() : ''
+			path.indexOf('.') > -1 ? path.split('.').pop() : undefined
 		const extensions = new Set()
 
 		this.children.forEach(child => {
@@ -120,7 +120,9 @@ export default class Node {
 		})
 
 		this.children.forEach(child => {
-			if (!child.isDirectory()) extensions.add(extensionOf(child.filename))
+			let ext
+			if (!child.isDirectory() && (ext = extensionOf(child.filename)))
+				extensions.add(ext)
 		})
 
 		for (const extension of extensions) {

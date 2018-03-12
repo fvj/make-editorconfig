@@ -213,7 +213,7 @@ class Node {
 
 	mergeByExtensions() {
 		const extensionOf = path =>
-			path.indexOf('.') > -1 ? path.split('.').pop() : '';
+			path.indexOf('.') > -1 ? path.split('.').pop() : undefined;
 		const extensions = new Set();
 
 		this.children.forEach(child => {
@@ -221,7 +221,9 @@ class Node {
 		});
 
 		this.children.forEach(child => {
-			if (!child.isDirectory()) extensions.add(extensionOf(child.filename));
+			let ext;
+			if (!child.isDirectory() && (ext = extensionOf(child.filename)))
+				extensions.add(ext);
 		});
 
 		for (const extension of extensions) {
@@ -335,6 +337,7 @@ const printAttributes = (tree, indent = 0, indentUnit = '  ') => {
 const generateConfig = tree => {
 	if (
 		Object.keys(tree.attributes).length == 0 &&
+		Object.keys(tree.attributesByExtension) == 0 &&
 		!tree.childrenContainInformation
 	)
 		return []
@@ -359,10 +362,13 @@ const generateConfig = tree => {
 					config.push(`${key} = ${tree.attributesByExtension[extension][key]}`);
 			}
 		}
+		config.push('');
 	}
 
-	if (tree.childrenContainInformation)
-		config.push(...flatten(tree.children.map(generateConfig)));
+	if (tree.childrenContainInformation) {
+		const childrenConfig = flatten(tree.children.map(generateConfig));
+		if (childrenConfig.length > 0) config.push(...childrenConfig);
+	}
 
 	return config.join('\n')
 };
