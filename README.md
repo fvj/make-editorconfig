@@ -3,7 +3,8 @@
 > A small library to generate editorconfigs automatically.
 
 ## Background
-The [editorconfig](https://editorconfig.org) describes editorconfigs as follows:
+The [editorconfig](https://editorconfig.org) website describes editorconfigs as 
+follows:
 
 > EditorConfig helps developers define and maintain consistent coding styles 
 > between different editors and IDEs. 
