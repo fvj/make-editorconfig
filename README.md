@@ -1,26 +1,59 @@
 # make-editorconfig
 
-> A small library to generate editorconfigs automatically.
+[![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+TODO: Put more badges here.
+
+> A library for generating editorconfigs automatically.
+
+This library provides the backend for frontends such as 
+[make-editorconfig-cli](https://github.com/fvj/make-editorconfig-cli) 
+and [make-editorconfig-web](https://github.com/fvj/make-editorconfig-web).
+
+## Table of Contents
+
+- [Background](#background)
+- [Install](#install)
+- [Usage](#usage)
+- [API](#api)
+- [Maintainers](#maintainers)
+- [Contribute](#contribute)
+- [License](#license)
 
 ## Background
-The [editorconfig](https://editorconfig.org) website describes editorconfigs as 
-follows:
 
-> EditorConfig helps developers define and maintain consistent coding styles 
-> between different editors and IDEs. 
+The official [editorconfig website](https://editorconfig.org) describes 
+editorconfigs as follows:
 
-This library produces such an `editorconfig` given a list of files and directories.
-It does so by first organizing the input into a tree, analyzing the contents
-of files and then reducing the detected file features by bubbling up the attributes
-most files having in common. It does a second pass to group attributes by
-file extension.
+> EditorConfig helps developers define and maintain consistent coding
+> styles between different editors and IDEs.
 
-## Usage
-To install:
+This library generates such a file given files. It does so by
 
-* Using npm: `npm install --save make-editorconfig`
-* Using yarn `yarn add make-editorconfig`
+1. Producing a tree structure
+2. Detecting file attributes for every file
+3. Bubbling up common attributes
+4. Merging common attributes by file extension
+5. Converting the tree into an editorconfig
+
+## Install
+
+* Using [yarn](https://yarnpkg.com): `yarn add make-editorconfig`
+* Using [npm](https://www.npmjs.com/get-npm): `npm install --save make-editorconfig`
+
+## API
+
+TODO
+
+## Maintainers
+
+[@fvj](https://github.com/fvj)
+
+## Contribute
+
+PRs accepted.
+
+Small note: If editing the README, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
 
 ## License
 
-[MIT](https://github.com/fvj/make-editorconfig/blob/master/LICENSE)
+MIT © 2018 Julius von Froreich
